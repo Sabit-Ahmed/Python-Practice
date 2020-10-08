@@ -1,0 +1,462 @@
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+                                     DJANGO LEVEL ONE
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+***virtual environment setup:
+1.create env: conda create myEnv
+2.activate env: conda activate myEnv/ activate myEnv
+3.deactivate: conda deactivate/ deactivate
+
+***creating project and app:
+1.make dir. django_project: mkdir django_project
+2.create project: django-admin startproject first_project
+3.create app: python manage.py startapp first_app
+4.add first_app in settings.py
+5.update views.py(request-response)  -> from django.http import HttpResponse, def index():
+6.update urls.py(import views.py and others)  -> from first_app import views,path('',views.index,name="index")
+7.run server(output): python manage.py runserver
+8.terminate: ctrl+C
+
+***app with another files link/another urls:
+1.create urls.py in first_app folder
+2.update urls.py(first_app) -> from django.urls import path, from first_app import views
+3.update urls.py(first_project)  -> from django.urls import path, from django.urls import include, from first_app import views,
+add path('any_name/',include('first_app.urls')
+
+***creating templates:
+1.create folder in first_project named "templates"
+2.update settings.py
+*create template var and store templates dir.  -> TEMPLATE_DIR = os.path.join(BASE_DIR,"templates")
+*update TEMPLATES list  -> 'DIRS':[TEMPLATE_DIR,],
+3.create first_app folder in templates
+4.create new file index.html in templates/first_app folder
+4.update index. html -> <body> <h1>string</h1> {{insert_me}}</body>
+5.update views.py in first_app
+-> def index():
+       my_dict={'insert_me':"Hello from views.py"}
+       return render(request,'first_app/index.html',context=my_dict)
+
+***creating static files:
+1.create "static" folder in first_project
+2.create new folder "images"in static
+3.update settings.py  ->
+*STATIC_DIR = os.path.join(BASE_DIR,"static")
+*make a list  -> STATICFILES_DIRS = [STATIC_DIR,]
+4.place an image inside the images folder
+5.{% load staticfiles %} after <!DOCTYPE html>
+6.<img src="{% static "images/psr.jpg"%}" alt="can't be shown!!!">
+
+
+***creating css:
+1.create static/css/style.css
+2.similar to static files
+
+
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+                                     DJANGO LEVEL TWO
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+***creating db:
+1.update models.py in first_app:
+
+->
+ class table_name_2(models.Model):
+    row_name_1 = models.ForeignKey(table_name_1,on_delete=models.DO_NOTHING)
+    row_name_2 = models.CharField(max_length=264,unique=True)
+    row_name_3 = models.URLField(unique=True)
+
+    def __str__(self):
+        return self.name///etc.
+
+2.run: python manage.py migrate(to check//hudai actually)
+3.run: python manage.py makemigrations first_app
+4.run: python manage.py migrate
+
+
+***interact with db with shell:
+1.run: python manage.py shell
+2. to test the content of a row of a table:
+*from first_app.models import table_name
+*print(table_name.objects.all())
+3.to input in the row:
+* var_name = table_name(row_name = "content")
+*var_name.save()
+4.print(table_name.objects.all())
+5.quit()
+
+
+***access to admin interface:
+1.update admin.py(first_app)
+   ->
+   from first_app.models import AccessRecord,Topic,Webpage
+   # Register your models here.
+   admin.site.register(table_name_1)
+2.create superuser for accessing admin interface  -> python manage.py createsuperuser
+
+3.run server
+4.go to url/admin
+
+
+***import fake db:
+1. activate environment
+2. pip install Faker
+3.create file -> first_project\populate_first_app.py
+4.setting up environment for first_project   ->
+                                               import os
+                                               os.environ.setdefault('DJANGO_SETTINGS_MODULE','first_project.settings')
+
+                                               import django
+                                               django.setup()
+                                               .......code....(populate_first_app.py)
+5.run: python populate_first_app.py
+6.run server
+
+
+***showing accwess_record(db contents):
+1.update views.py   ->
+                       from first_app.models import Topic,Webpage,AccessRecord
+                       .....code....
+2.update templates/index.html
+3.runserver
+
+
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+                                     DJANGO LEVEL THREE
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+***creatiing forms:
+1. create template/first_app/form.html
+2. create first_project/first_app/forms.py
+3. update forms.py(same as models.py)  ->
+                                         from django import forms
+                                         class FormName(forms.Form):
+                                                name = forms.CharField()
+                                                email = forms.Emailfield()
+                                                text = forms.CharField(widget=forms.Textarea)
+4.update views.py ->
+
+    from django.shortcuts import render
+    from . import forms
+
+    # Create your views here.
+
+    def index(req):
+      return render(req,'first_app/index.html')
+
+    def form_name_view(req):
+        form = forms.FormName()
+        return render(req,'first_app/form.html',{'form':form})
+5.update first_project/first_project/urls.py
+6.update form.html {{form}} or {{form.as_p}} etc.
+7. update views.py
+8.runserver
+
+***form validation:
+***botcatcher manual code -> ss
+
+***botcatcher validator:
+1.update forms.py  ->
+                      from django.core import validators
+                      ...code...
+                      botcatcher = forms.CharField(required=False,widget=forms.HiddenInput,validators=[validators.MaxLengthValidator(0)])
+
+***creating any custom validator function:
+->       def check_z(value):
+            if value[0].lower() != 'z':
+               raise forms.ValidationError("Name needs to start with z")
+
+***clean_data:
+                -> def clean(self):
+                    all_clean_data = super().clean()
+                    email = all_clean_data['email']
+                    vmail = all_clean_data['verify_email']
+
+                    if email != vmail:
+                        raise forms.ValidationError("Email not matched!")
+
+    ********HERE IS PAIN IN THE ASS:*********
+
+                 If spaces and tabs are mixed, errors will be shown for unspecified indentation
+
+***creating model forms(form interact with model):
+1.update forms.py  -> from django import forms
+                      from AppTwo.models import User
+
+                      class NewUserForm(forms.ModelForm):
+                          class Meta():
+                              model = User
+                              fields = '__all__'
+2.update update views.py  ->
+                            from django.shortcuts import render
+                            from AppTwo.forms import NewUserForm
+
+                            # Create your views here.
+
+                            def index(request):
+                                return render(request,'AppTwo/index.html')
+
+                            def users(request):
+                                form = NewUserForm()
+
+                                # after submission the form
+                                if request.method == 'POST':
+                                    form = NewUserForm(request.POST)
+
+                                    # printing the values of the form fields
+                                    if form.is_valid():
+                                        form.save(commit=True)
+                                        return index(request)
+                                    else:
+                                        print("Invalid!")
+                                return render(request,'AppTwo/user.html',{'form':form})
+
+                            def help(request):
+                                return render(request,'AppTwo/help.html')
+
+3.update html file
+
+
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+                                     DJANGO LEVEL FOUR
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+
+***reminder:
+***loading static files:  -> 1. {% load staticfies %}
+                            2. after href: {%static "css/style.css"%} (space after static is mandatory)
+***loading url:
+1. update first_app/url.py  -> #TEMPLATE TAGGING
+                                app_name = 'first_app'
+
+2.update html file:          ->  after href : {%url 'first_app:other'%} (space after url is mandatory)
+
+
+
+***extending html files:
+1.update/create base.html
+2. update index.html/another file ->
+<!DOCTYPE html>
+{% extends "first_app/base.html" %}
+  {% block body_block %}
+  <div class="container">
+    <h1>WELCOME TO HOME PAGE!<h1>
+  </div>
+
+  {% endblock %}
+
+
+
+*** using built-in templates:
+1.update views.py   ->
+                      def other(req):
+                          dict = {'text':'Hello madafaka!','number':'100'}
+                          return render(req,'first_app/other.html',dict)
+2. update other.html     ->
+                          <!DOCTYPE html>
+                          {% extends "first_app/base.html" %}
+                            {% block body_block %}
+                            <div class="container">
+                              <p><h1>WELCOME TO OTHER PAGE!<h1></p>
+                                <p><h1>{{text | upper}}</h1></p>
+                                <p><h1>{{number | add:99}}</h1><p>
+                            </div>
+
+                            {% endblock %}
+
+*** using custom templates:
+1. create new folder first_project\first_app\templatetags
+2.create new file templatetags\__init__.py
+3.create a new file templatetags\my_extras.py where we write custom filters code
+4.update my_extras.py   ->
+                          from django import template
+
+                          register = template.Library()
+
+                          #@register.filter(name='cut')  ///using decorator
+                          def cut(value,arg):
+                              return value.replace(arg,'ba')
+
+                          register.filter('cut1',cut)   ///using with registering with Library -> Library.filter() which takes two args
+5.update other.html  ->
+                      <!DOCTYPE html>
+                      {% extends "first_app/base.html" %}
+                      {% load my_extras %}
+                        {% block body_block %}
+                        <div class="container">
+                          <p><h1>WELCOME TO OTHER PAGE!<h1></p>
+                            <p><h1>{{text | cut1:"Hel"}}</h1></p>
+                            <p><h1>{{number | add:98}}</h1><p>
+                        </div>
+
+                        {% endblock %}
+
+
+                        _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+                                                             DJANGO LEVEL FIVE
+                        _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+///LOGIN AND SIGN UP
+
+***Registration:
+
+***to upgrade pip: python -m pip install --upgrade pip
+*** install  -> bcrypt
+             -> django[argon2]
+
+*** update settings.py:
+1. make a list for password encryption ->
+                          PASSWORD_HASHERS = [
+                              'django.contrib.auth.hashers.Argon2PasswordHasher',
+                              'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+                              'django.contrib.auth.hashers.BCryptPasswordHasher',
+                              'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+                          ]
+2.update AUTH_PASSWORD_VALIDATORS list for custom validation  ->
+      AUTH_PASSWORD_VALIDATORS = [{
+                                        ... ,
+                                        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+                                        'OPTIONS':{'min_length':9}
+                                  },
+                                  ... ,
+                            ]
+
+
+*** create media folder at first_project/media
+
+***update settings.py for user folder /media:
+1. MEDIA_DIR = os.path.join(BASE_DIR,"media")
+2.MEDIA_ROOT = MEDIA_DIR
+3.MEDIA_URL = '/media/'
+
+*** update models.py:   ->
+                          from django.db import models
+                          from django.contrib.auth.models import User
+
+                          # Create your models here.
+                          class UserInfo(models.Model):
+                              #relationship with built in User class
+                              user = models.OneToOneField(User,'on_delete')
+                              #Additional custom attributes
+                              portfolio = models.URLField(blank=True)
+                              picture = models.ImageField(upload_to='pro_pics')
+
+                              def __str__(self):
+                                  return self.user.username #username is built-in attribute of User
+
+
+
+*** install pillow  for imaging library
+
+*** update forms.py :   ->
+                          from django import forms
+                          from django.contrib.auth.models import User
+                          from first_app.model import UserInfo
+
+                          class UserForm(forms.ModelForm):
+                              password = forms.CharField(widget=forms.PasswordInput())
+
+                              class Meta():
+                                  model = User
+                                  fields = ('username','email','password')
+
+                          class UserInfoForm(forms.ModelForm):
+                              class Meta():
+                                  model = UserInfo
+                                  fields = ('portfolio','picture')
+
+ ***update index,base,login,registration.html
+***update views.py:
+1.update views.register  ->
+                          from django.shortcuts import render
+                          #from . import forms
+                          from first_app.forms import UserForm,UserInfoForm
+
+                          # Create your views here.
+
+
+                          def register(request):
+                              registered = False
+
+                              if request.method == "POST":
+                                  user_form = UserForm(data=request.POST)
+                                  info_form = UserInfoForm(data=request.POST)
+
+                                  if user_form.is_valid() and info_form.is_valid():
+                                      user = user_form.save()
+                                      user.set_password(user.password)
+                                      user.save()
+
+                                      info = info_form.save(commit=False)
+                                      info.user = user
+
+                                      if 'pro_pics' in request.FILES:
+                                          info.pro_pics = request.FILES['pro_pics']
+
+                                      info.save()
+                                      registered = True
+                                  else:
+                                      print(user_form.errors,info_form.errors)
+                              else:
+                                  user_form = UserForm()
+                                  info_form = UserInfoForm()
+
+                              return render(request,'first_app/registration.html',
+                                                     {'user_form':user_form,
+                                                      'info_form':info_form,
+                                                       'registered':registered})
+
+
+***login:
+1.update settings.py -> LOGIN_URL='/first_app/user_login'
+2.create login.html and update ->
+                                <form action="{% url 'first_app:user_login' %}" method="post">
+                                  {% csrf_token %}
+                                  <label for="username">Username:</label>
+                                  <input type="text" name="username" placeholder="Enter Username">
+
+                                  <label for="password">Password:</label>
+                                  <input type="text" name="password">
+
+                                  <input type="submit" name="" value="Login">
+                                </form>
+
+3.update views.py  ->
+                    def user_login(request):
+
+                        if request.method == 'POST':
+
+                            username = request.POST.get('username')
+                            password = request.POST.get('password')
+
+                            user = authenticate(username=username,password=password)
+
+                            if user:
+                                if user.is_active:
+                                    login(request,user)
+                                    return HttpResponseRedirect(reverse('index'))
+                                else:
+                                    return HttpResponse("ACCOUNT NOT ACTIVE!")
+                            else:
+                                print("Someone tried to login and failed!")
+                                print("Username: {} and password: {}".format(username,password))
+                                return HttpResponse("Invalid login details!")
+                        else:
+                            return render(request,'first_app/login.html',{})
+
+                    @login_required
+                    def user_logout(request):
+                        logout(request)
+                        return HttpResponseRedirect(reverse('index'))
+
+                    @login_required
+                    def special(request):
+                        return HttpResponse("You are logged in!")
+
+
+4.update login.html
+5.update urls.py for login and logout
